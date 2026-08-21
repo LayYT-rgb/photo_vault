@@ -30,7 +30,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
       if (!permission.isAuth) {
         setState(() {
           _loading = false;
-          _error = 'Доступ к галерее не разрешён. Разреши доступ в настройках приложения.';
+          _error = "Doступ к галерее не разрешен";
         });
         return;
       }
@@ -44,7 +44,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
       if (albums.isEmpty) {
         setState(() {
           _loading = false;
-          _error = 'Альбомы не найдены.';
+          _error = "Альбомы не найдены";
         });
         return;
       }
@@ -58,10 +58,10 @@ class _GalleryScreenState extends State<GalleryScreen> {
         _trashedIds = trashedMap.keys.toSet();
         _loading = false;
       });
-    } catch (e, stack) {
+    } catch (e) {
       setState(() {
         _loading = false;
-        _error = 'Ошибка: $e\n\n$stack';
+        _error = "Ошибка: " + e.toString();
       });
     }
   }
@@ -70,17 +70,22 @@ class _GalleryScreenState extends State<GalleryScreen> {
     if (_selected.isEmpty) return;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Переместить в корзину?'),
-        content: Text(
-          'Выбрано: ${_selected.length}. Фото можно будет восстановить '
-          'в течение ${TrashService.restoreWindowDays} дней.',
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Отмена')),
-          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('В корзину')),
-        ],
-      ),
+      builder: (ctx) {
+        return AlertDialog(
+          title: const Text("Переместить в корзину?"),
+          content: Text("Выбрано: " + _selected.length.toString()),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text("Отмена"),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text("В корзину"),
+            ),
+          ],
+        );
+      },
     );
     if (confirmed != true) return;
 
@@ -95,10 +100,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
   Widget build(BuildContext context) {
     if (_error != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Ошибка')),
+        appBar: AppBar(title: const Text("Ошибка")),
         body: Padding(
           padding: const EdgeInsets.all(16),
-          child: SingleChildScrollView(child: Text(_error!)),
+          child: SingleChildScrollView(
+            child: Text(_error!),
+          ),
         ),
       );
     }
@@ -107,22 +114,27 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Моя галерея'),
+        title: const Text("Моя галерея"),
         actions: [
           IconButton(
             icon: const Icon(Icons.delete_outline),
-            tooltip: 'Корзина',
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const TrashScreen()),
-            ).then((_) => _init()),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) {
+                    return const TrashScreen();
+                  },
+                ),
+              ).then((_) => _init());
+            },
           ),
         ],
       ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : visible.isEmpty
-              ? const Center(child: Text('Нет доступа к галерее или фото не найдены'))
+              ? const Center(child: Text("Нет фото"))
               : GridView.builder(
                   padding: const EdgeInsets.all(4),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -135,16 +147,24 @@ class _GalleryScreenState extends State<GalleryScreen> {
                     final asset = visible[index];
                     final isSelected = _selected.contains(asset.id);
                     return GestureDetector(
-                      onTap: () => setState(() {
-                        isSelected ? _selected.remove(asset.id) : _selected.add(asset.id);
-                      }),
+                      onTap: () {
+                        setState(() {
+                          if (isSelected) {
+                            _selected.remove(asset.id);
+                          } else {
+                            _selected.add(asset.id);
+                          }
+                        });
+                      },
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
                           FutureBuilder(
                             future: asset.thumbnailDataWithSize(const ThumbnailSize(200, 200)),
                             builder: (context, snapshot) {
-                              if (!snapshot.hasData) return Container(color: Colors.grey[300]);
+                              if (!snapshot.hasData) {
+                                return Container(color: Colors.grey);
+                              }
                               return Image.memory(snapshot.data!, fit: BoxFit.cover);
                             },
                           ),
@@ -163,7 +183,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
           : FloatingActionButton.extended(
               onPressed: _deleteSelected,
               icon: const Icon(Icons.delete_outline),
-              label: Text('В корзину (${_selected.length})'),
+              label: Text("В корзину (" + _selected.length.toString() + ")"),
             ),
     );
   }
