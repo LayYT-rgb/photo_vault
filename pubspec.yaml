@@ -1,1 +1,21 @@
+name: photo_vault
+description: Безопасный органайзер фото с корзиной восстановления
+publish_to: 'none'
+version: 0.1.0
 
+environment:
+  sdk: '^3.13.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  photo_manager: ^3.2.4
+  shared_preferences: ^2.2.3
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
